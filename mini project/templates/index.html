@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Patient Readmission & ICU Risk Prediction</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}" />
+</head>
+<body>
+    <div class="app-shell">
+        <header class="topbar">
+            <div>
+                <p class="eyebrow">Clinical Intelligence Platform</p>
+                <h1>Patient Readmission & ICU Emergency Risk Prediction System</h1>
+            </div>
+            <button id="trainBtn" class="secondary-btn">Train Model</button>
+        </header>
+
+        <main class="dashboard">
+            <section class="panel input-panel">
+                <h2>1. Patient Intake</h2>
+                <form id="patientForm" class="patient-form">
+                    <div class="file-row">
+                        <label class="upload-file">
+                            <span>Upload Image</span>
+                            <input type="file" id="medicalImage" name="medicalImage" accept="image/*" />
+                        </label>
+                    </div>
+
+                    <div class="form-grid">
+                        <label>
+                            <span>Age</span>
+                            <input type="number" name="age" value="58" min="18" max="100" />
+                        </label>
+                        <label>
+                            <span>BMI</span>
+                            <input type="number" name="bmi" value="29.4" step="0.1" />
+                        </label>
+                        <label>
+                            <span>Heart Rate</span>
+                            <input type="number" name="heart_rate" value="89" step="0.1" />
+                        </label>
+                        <label>
+                            <span>Systolic BP</span>
+                            <input type="number" name="sys_bp" value="142" step="0.1" />
+                        </label>
+                        <label>
+                            <span>Oxygen Saturation (%)</span>
+                            <input type="number" name="oxygen_saturation" value="92" step="0.1" />
+                        </label>
+                    </div>
+
+                    <div class="action-row">
+                        <button type="button" class="ghost-btn" id="sampleBtn">Load Sample Patient</button>
+                        <button type="submit" class="primary-btn">Predict Risk</button>
+                    </div>
+                </form>
+            </section>
+
+            <section class="panel metric-panel">
+                <h2>2. Model Performance</h2>
+                <p class="metric-note">Model performance reflects the trained model, not the values entered for a single patient.</p>
+                <div class="stat-grid">
+                    <div class="stat-card">
+                        <span>Accuracy</span>
+                        <strong id="accuracyValue">0.00</strong>
+                    </div>
+                    <div class="stat-card">
+                        <span>Precision</span>
+                        <strong id="precisionValue">0.00</strong>
+                    </div>
+                    <div class="stat-card">
+                        <span>Recall</span>
+                        <strong id="recallValue">0.00</strong>
+                    </div>
+                    <div class="stat-card">
+                        <span>F1 Score</span>
+                        <strong id="f1Value">0.00</strong>
+                    </div>
+                </div>
+
+                <div class="metric-chart">
+                    <div class="metric-row">
+                        <label>Accuracy</label>
+                        <div class="bar-track"><span id="accuracyBar" class="bar-fill bar-accuracy" style="width:0%"></span></div>
+                        <strong id="accuracyPercent">0%</strong>
+                    </div>
+                    <div class="metric-row">
+                        <label>Precision</label>
+                        <div class="bar-track"><span id="precisionBar" class="bar-fill bar-precision" style="width:0%"></span></div>
+                        <strong id="precisionPercent">0%</strong>
+                    </div>
+                    <div class="metric-row">
+                        <label>Recall</label>
+                        <div class="bar-track"><span id="recallBar" class="bar-fill bar-recall" style="width:0%"></span></div>
+                        <strong id="recallPercent">0%</strong>
+                    </div>
+                    <div class="metric-row">
+                        <label>F1</label>
+                        <div class="bar-track"><span id="f1Bar" class="bar-fill bar-f1" style="width:0%"></span></div>
+                        <strong id="f1Percent">0%</strong>
+                    </div>
+                </div>
+
+                <div class="confusion-box">
+                    <h3>Confusion Matrix</h3>
+                    <div id="confusionMatrix" class="matrix-grid">
+                        <span>0</span>
+                        <span>0</span>
+                        <span>0</span>
+                        <span>0</span>
+                    </div>
+                </div>
+            </section>
+
+            <section class="panel pipeline-panel">
+                <h2>3. Machine Learning Process</h2>
+                <div class="pipeline-visual">
+                    <div class="stage-card complete" data-stage="input">
+                        <div class="stage-head">
+                            <span class="stage-badge">1</span>
+                            <h3>Data Input</h3>
+                            <span class="stage-status">✓</span>
+                        </div>
+                        <p>Patient details entered from form or uploaded CSV file.</p>
+                    </div>
+                    <div class="stage-card" data-stage="preprocess">
+                        <div class="stage-head">
+                            <span class="stage-badge">2</span>
+                            <h3>Preprocessing</h3>
+                            <span class="stage-status">✓</span>
+                        </div>
+                        <div class="mini-bars">
+                            <span style="height: 60%"></span>
+                            <span style="height: 75%"></span>
+                            <span style="height: 90%"></span>
+                            <span style="height: 68%"></span>
+                        </div>
+                        <p>Clean missing values, encode categorical fields.</p>
+                    </div>
+                    <div class="stage-card" data-stage="features">
+                        <div class="stage-head">
+                            <span class="stage-badge">3</span>
+                            <h3>Feature Selection</h3>
+                            <span class="stage-status">✓</span>
+                        </div>
+                        <div class="feature-pill-group">
+                            <span>Clinical</span>
+                            <span>Vitals</span>
+                            <span>Lab</span>
+                        </div>
+                        <p>Most relevant signals selected for model training.</p>
+                    </div>
+                    <div class="stage-card" data-stage="training">
+                        <div class="stage-head">
+                            <span class="stage-badge">4</span>
+                            <h3>Train-Test Split</h3>
+                            <span class="stage-status">✓</span>
+                        </div>
+                        <div class="progress-ring">
+                            <span>RF</span>
+                        </div>
+                        <p>Dataset split for unbiased model learning and testing.</p>
+                    </div>
+                    <div class="stage-card" data-stage="evaluation">
+                        <div class="stage-head">
+                            <span class="stage-badge">5</span>
+                            <h3>Evaluation</h3>
+                            <span class="stage-status">✓</span>
+                        </div>
+                        <div class="score-legend">
+                            <span>Acc</span>
+                            <span>Prec</span>
+                            <span>Recall</span>
+                        </div>
+                        <p>Model metrics calculated and confusion matrix produced.</p>
+                    </div>
+                </div>
+            </section>
+
+            <section class="panel output-panel">
+                <h2>4. Prediction Result</h2>
+                <div id="resultBox" class="result-box empty">
+                    <p>Enter patient clinical details and click Predict Risk to generate the result.</p>
+                </div>
+
+                <div class="prediction-grid">
+                    <div class="risk-card" id="readmissionRiskCard">
+                        <div class="risk-head">
+                            <span class="risk-label">Readmission Risk</span>
+                            <span class="risk-tag neutral">PENDING</span>
+                        </div>
+                        <h3 class="risk-title">LOW READMISSION RISK</h3>
+                        <div class="confidence-box">
+                            <span>Confidence</span>
+                            <strong id="readmissionConfidence">0%</strong>
+                        </div>
+                        <div class="probability-block">
+                            <div class="probability-row">
+                                <span>Low</span>
+                                <div class="bar-track"><span id="readmissionLowBar" class="bar-fill bar-low" style="width:0%"></span></div>
+                                <strong id="readmissionLowValue">0%</strong>
+                            </div>
+                            <div class="probability-row">
+                                <span>High</span>
+                                <div class="bar-track"><span id="readmissionHighBar" class="bar-fill bar-high" style="width:0%"></span></div>
+                                <strong id="readmissionHighValue">0%</strong>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="risk-card" id="icuRiskCard">
+                        <div class="risk-head">
+                            <span class="risk-label">ICU Emergency Risk</span>
+                            <span class="risk-tag neutral">PENDING</span>
+                        </div>
+                        <h3 class="risk-title">LOW ICU EMERGENCY RISK</h3>
+                        <div class="confidence-box">
+                            <span>Confidence</span>
+                            <strong id="icuConfidence">0%</strong>
+                        </div>
+                        <div class="probability-block">
+                            <div class="probability-row">
+                                <span>Low</span>
+                                <div class="bar-track"><span id="icuLowBar" class="bar-fill bar-low" style="width:0%"></span></div>
+                                <strong id="icuLowValue">0%</strong>
+                            </div>
+                            <div class="probability-row">
+                                <span>High</span>
+                                <div class="bar-track"><span id="icuHighBar" class="bar-fill bar-high" style="width:0%"></span></div>
+                                <strong id="icuHighValue">0%</strong>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script>
+        const patientForm = document.getElementById('patientForm');
+        const sampleBtn = document.getElementById('sampleBtn');
+        const trainBtn = document.getElementById('trainBtn');
+        const resultBox = document.getElementById('resultBox');
+        const accuracyValue = document.getElementById('accuracyValue');
+        const precisionValue = document.getElementById('precisionValue');
+        const recallValue = document.getElementById('recallValue');
+        const f1Value = document.getElementById('f1Value');
+
+        function updateStageStatus(stageName) {
+            const stages = Array.from(document.querySelectorAll('.stage-card'));
+            const currentIndex = stages.findIndex((card) => card.dataset.stage === stageName);
+            stages.forEach((card, index) => {
+                const isComplete = index <= currentIndex;
+                const isActive = index === currentIndex;
+                card.classList.toggle('complete', isComplete);
+                card.classList.toggle('active', isActive);
+            });
+        }
+
+        function setMetricBars(metrics) {
+            const entries = [
+                ['accuracy', 'accuracyBar', 'accuracyPercent'],
+                ['precision', 'precisionBar', 'precisionPercent'],
+                ['recall', 'recallBar', 'recallPercent'],
+                ['f1_score', 'f1Bar', 'f1Percent'],
+            ];
+            entries.forEach(([key, barId, textId]) => {
+                const pct = Math.round((Number(metrics[key] || 0)) * 100);
+                const bar = document.getElementById(barId);
+                const text = document.getElementById(textId);
+                if (bar) bar.style.width = `${pct}%`;
+                if (text) text.textContent = `${pct}%`;
+            });
+        }
+
+        function setConfusionMatrix(matrix) {
+            const cells = document.querySelectorAll('#confusionMatrix span');
+            const values = Array.isArray(matrix) && matrix.length === 2 ? matrix.flat() : [0, 0, 0, 0];
+            cells.forEach((cell, index) => {
+                cell.textContent = values[index] ?? 0;
+            });
+        }
+
+        function updateRiskCard(cardId, labelText, distribution, confidence) {
+            const card = document.getElementById(cardId);
+            const tag = card.querySelector('.risk-tag');
+            const title = card.querySelector('.risk-title');
+            const conf = card.querySelector('.confidence-box strong');
+
+            title.textContent = labelText;
+            conf.textContent = `${confidence}%`;
+
+            const lowBar = card.querySelector('[id$="LowBar"]');
+            const highBar = card.querySelector('[id$="HighBar"]');
+            const lowValue = card.querySelector('[id$="LowValue"]');
+            const highValue = card.querySelector('[id$="HighValue"]');
+            const lowPct = Math.round((distribution.LOW || 0) * 100);
+            const highPct = Math.round((distribution.HIGH || 0) * 100);
+
+            if (lowBar) lowBar.style.width = `${lowPct}%`;
+            if (highBar) highBar.style.width = `${highPct}%`;
+            if (lowValue) lowValue.textContent = `${lowPct}%`;
+            if (highValue) highValue.textContent = `${highPct}%`;
+
+            if (labelText.includes('HIGH')) {
+                card.classList.add('high-risk');
+                card.classList.remove('low-risk');
+                tag.textContent = 'HIGH';
+                tag.className = 'risk-tag high';
+            } else {
+                card.classList.add('low-risk');
+                card.classList.remove('high-risk');
+                tag.textContent = 'LOW';
+                tag.className = 'risk-tag low';
+            }
+        }
+
+        function loadDefaultMetrics(summary) {
+            const metrics = summary?.readmission || summary?.icu || { accuracy: 0, precision: 0, recall: 0, f1_score: 0 };
+            accuracyValue.textContent = metrics.accuracy.toFixed(4);
+            precisionValue.textContent = metrics.precision.toFixed(4);
+            recallValue.textContent = metrics.recall.toFixed(4);
+            f1Value.textContent = metrics.f1_score.toFixed(4);
+            setMetricBars(metrics);
+            const matrix = summary?.readmission?.confusion_matrix || [[0, 0], [0, 0]];
+            setConfusionMatrix(matrix);
+        }
+
+        function loadSamplePatient() {
+            patientForm.age.value = 58;
+            patientForm.bmi.value = 29.4;
+            patientForm.heart_rate.value = 89;
+            patientForm.sys_bp.value = 142;
+            patientForm.oxygen_saturation.value = 92;
+
+            setTimeout(() => {
+                patientForm.requestSubmit();
+            }, 50);
+        }
+
+        sampleBtn.addEventListener('click', loadSamplePatient);
+
+        trainBtn.addEventListener('click', async () => {
+            const formData = new FormData();
+            const fileInput = document.getElementById('datasetFile');
+            if (fileInput && fileInput.files && fileInput.files.length > 0) {
+                formData.append('datasetFile', fileInput.files[0]);
+            }
+
+            trainBtn.disabled = true;
+            trainBtn.textContent = 'Training...';
+
+            try {
+                const response = await fetch('/api/train', { method: 'POST', body: formData });
+                const data = await response.json();
+                if (data.summary) {
+                    loadDefaultMetrics(data.summary);
+                    resultBox.className = 'result-box success';
+                    resultBox.innerHTML = `<p>${data.message}</p>`;
+                }
+            } catch (error) {
+                resultBox.className = 'result-box error';
+                resultBox.innerHTML = '<p>Training failed. Please try again.</p>';
+            } finally {
+                trainBtn.disabled = false;
+                trainBtn.textContent = 'Train Model';
+            }
+        });
+
+        patientForm.addEventListener('submit', async (event) => {
+            event.preventDefault();
+            const formData = new FormData(patientForm);
+            const fileInput = document.getElementById('datasetFile');
+            if (fileInput && fileInput.files && fileInput.files.length > 0) {
+                formData.append('datasetFile', fileInput.files[0]);
+            }
+
+            resultBox.className = 'result-box pending';
+            resultBox.innerHTML = '<p>Prediction Completed</p>';
+            updateStageStatus('input');
+            setTimeout(() => updateStageStatus('preprocess'), 250);
+            setTimeout(() => updateStageStatus('features'), 500);
+            setTimeout(() => updateStageStatus('training'), 750);
+            setTimeout(() => updateStageStatus('evaluation'), 1000);
+
+            try {
+                const response = await fetch('/api/predict', { method: 'POST', body: formData });
+                const data = await response.json();
+                const prediction = data.prediction;
+
+                const readmission = prediction.readmission;
+                const icu = prediction.icu;
+
+                updateRiskCard('readmissionRiskCard', `${readmission.label} READMISSION RISK`, readmission.class_distribution, readmission.confidence_percent);
+                updateRiskCard('icuRiskCard', `${icu.label} ICU EMERGENCY RISK`, icu.class_distribution, icu.confidence_percent);
+
+                const isNormal = readmission.label === 'LOW' && icu.label === 'LOW';
+                resultBox.className = isNormal ? 'result-box success' : 'result-box error';
+                resultBox.innerHTML = `
+                    <div class="status-pill">${isNormal ? 'Normal' : 'Alert'}</div>
+                    <h3>Prediction Completed</h3>
+                    <p>Readmission: ${readmission.label} READMISSION RISK</p>
+                    <p>ICU Emergency: ${icu.label} ICU EMERGENCY RISK</p>
+                `;
+
+                if (data.model_summary) {
+                    const summary = data.model_summary.readmission;
+                    accuracyValue.textContent = summary.accuracy.toFixed(4);
+                    precisionValue.textContent = summary.precision.toFixed(4);
+                    recallValue.textContent = summary.recall.toFixed(4);
+                    f1Value.textContent = summary.f1_score.toFixed(4);
+                    setMetricBars(summary);
+                    setConfusionMatrix(summary.confusion_matrix);
+                }
+            } catch (error) {
+                resultBox.className = 'result-box error';
+                resultBox.innerHTML = '<p>Prediction failed. Please verify patient data and try again.</p>';
+            }
+        });
+
+        setMetricBars({ accuracy: 0, precision: 0, recall: 0, f1_score: 0 });
+        setConfusionMatrix([[0, 0], [0, 0]]);
+    </script>
+</body>
+</html>
